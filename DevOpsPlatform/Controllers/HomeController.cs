@@ -9,12 +9,12 @@ namespace DevOpsPlatform.Controllers
     {
         [HttpPost]
         [Route("Webhook")]
-        public IActionResult TriggerWebhook(string jsonPayload)
+        public IActionResult TriggerWebhook()
         {
             Console.WriteLine("!!!!!!!!!!!!!!!!!!!!");
-            Console.WriteLine(jsonPayload);
+            Console.WriteLine(this.Response.Body);
             Console.WriteLine("!!!!!!!!!!!!!!!!!!!!");
-            return Ok(jsonPayload);
+            return Ok();
         }
     }
 }
