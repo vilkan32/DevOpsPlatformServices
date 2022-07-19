@@ -1,4 +1,5 @@
 ﻿using DevOpsPlatform.Models;
+using DevOpsPlatform.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -14,12 +15,15 @@ namespace DevOpsPlatform.Controllers
 
         private IConfiguration _configuration;
 
-        private readonly string _token;
+        private readonly string _secretName;
+
+        private readonly string _vaultName;
         public HomeController(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
             _configuration = configuration;
-            _token = _configuration.GetSection("Github").GetSection("Token").Value;
+            _vaultName = _configuration.GetSection("AzureKeyVault").GetSection("Name").Value;
+            _secretName = _configuration.GetSection("AzureKeyVault").GetSection("SecretName").Value;
         }
 
         [HttpPost]
@@ -28,15 +32,17 @@ namespace DevOpsPlatform.Controllers
         {
             try
             {
+                var secret = KeyVaultService.GetSecret(_secretName, _vaultName);
+
                 var body = string.Empty;
                 using StreamReader stream = new StreamReader(this.HttpContext.Request.Body);
-
+                
                 body = await stream.ReadToEndAsync();
 
                 var parsedResponse = JsonConvert.DeserializeObject<Payload>(body);
 
                 _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", _token);
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", secret);
                 _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("vilkan32");
 
                 using var request = new HttpRequestMessage(HttpMethod.Post, $"https://api.github.com/repos/vilkan32/DevOpsPlatformServices/issues/{parsedResponse.Issue.Number}/comments");
