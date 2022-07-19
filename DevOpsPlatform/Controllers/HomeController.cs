@@ -19,7 +19,7 @@ namespace DevOpsPlatform.Controllers
         {
             _httpClient = httpClient;
             _configuration = configuration;
-            _token =_configuration.GetSection("Github").GetSection("Token").Value;
+            _token = _configuration.GetSection("Github").GetSection("Token").Value;
         }
 
         [HttpPost]
@@ -43,7 +43,7 @@ namespace DevOpsPlatform.Controllers
 
                 request.Content = JsonContent.Create(new { body = "Thanks for submitting this issue. Our Team will get back to you as soon as possible!" });
 
-                var response = await _httpClient.SendAsync(request);
+                using var response = await _httpClient.SendAsync(request);
 
                 return Ok(await response.Content.ReadAsStringAsync());
             }
